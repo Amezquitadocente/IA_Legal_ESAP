@@ -2,8 +2,8 @@
 import streamlit as st
 import os
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain.vectorstores import Chroma
-from langchain.document_loaders import PyPDFLoader, DirectoryLoader, Docx2txtLoader
+from langchain_community.vectorstores import FAISS
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, Docx2txtLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
 
@@ -19,7 +19,7 @@ def cargar_base_de_conocimiento():
     # Cargar documentos desde la carpeta 'documentos'
     loader_pdf = DirectoryLoader('documentos/', glob="./*.pdf", loader_cls=PyPDFLoader, show_progress=True)
     loader_docx = DirectoryLoader('documentos/', glob="./*.docx", loader_cls=Docx2txtLoader, show_progress=True)
-
+    
     documentos = loader_pdf.load() + loader_docx.load()
 
     if not documentos:
@@ -33,9 +33,9 @@ def cargar_base_de_conocimiento():
     # Usar los 'embeddings' de Google para convertir texto a vectores
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=st.secrets["GOOGLE_API_KEY"])
 
-    # Crear la base de datos vectorial en memoria con Chroma
-    vectordb = Chroma.from_documents(documents=textos, embedding=embeddings)
-    return vectordb.as_retriever(search_kwargs={"k": 3}) # k=3 significa que buscará los 3 trozos más relevantes
+    # Crear la base de datos vectorial en memoria con FAISS (reemplaza a Chroma)
+    vectordb = FAISS.from_documents(documents=textos, embedding=embeddings)
+    return vectordb.as_retriever(search_kwargs={"k": 3})
 
 # --- LÓGICA PRINCIPAL DE LA APLICACIÓN ---
 try:
@@ -46,11 +46,11 @@ try:
 
     # Cargar la base de conocimiento y el recuperador
     retriever = cargar_base_de_conocimiento()
-
+    
     # Configurar el modelo de lenguaje de Google (Gemini)
     llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=st.secrets["GOOGLE_API_KEY"],
                                  temperature=0.2, convert_system_message_to_human=True)
-
+    
     # Crear la cadena que une el buscador (retriever) y el cerebro (llm)
     qa_chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
 
