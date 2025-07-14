@@ -2,6 +2,7 @@ streamlit
 langchain
 langchain-google-genai
 langchain-community
-chromadb
+fais-cpu
+tiktoken
 pypdf
 docx2txt
