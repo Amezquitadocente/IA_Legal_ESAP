@@ -33,7 +33,7 @@ def cargar_base_de_conocimiento():
     # Usar los 'embeddings' de Google para convertir texto a vectores
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=st.secrets["GOOGLE_API_KEY"])
 
-    # Crear la base de datos vectorial en memoria con FAISS (reemplaza a Chroma)
+    # Crear la base de datos vectorial en memoria con FAISS
     vectordb = FAISS.from_documents(documents=textos, embedding=embeddings)
     return vectordb.as_retriever(search_kwargs={"k": 3})
 
@@ -47,8 +47,8 @@ try:
     # Cargar la base de conocimiento y el recuperador
     retriever = cargar_base_de_conocimiento()
     
-    # Configurar el modelo de lenguaje de Google (Gemini)
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=st.secrets["GOOGLE_API_KEY"],
+    # Configurar el modelo de lenguaje de Google (Gemini) con el nombre actualizado
+    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", google_api_key=st.secrets["GOOGLE_API_KEY"],
                                  temperature=0.2, convert_system_message_to_human=True)
     
     # Crear la cadena que une el buscador (retriever) y el cerebro (llm)
